@@ -1,0 +1,6 @@
+name: TwistedPassAPI
+main: net.twistedmc.twistedpass.Main
+version: 0.0.1
+authors: [MCEpic_Nation,shastagrande]
+website: https://twistedmc.net
+commands:

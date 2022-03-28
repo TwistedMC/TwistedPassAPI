@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="TwistedPassAPI:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/TwistedPassAPI_jar</output-path>
+    <root id="archive" name="TwistedPassAPI.jar">
+      <element id="module-output" name="TwistedPassAPI" />
+    </root>
+  </artifact>
+</component>

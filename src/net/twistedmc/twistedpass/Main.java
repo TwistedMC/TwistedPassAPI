@@ -9,7 +9,8 @@ public class Main extends JavaPlugin {
     public static int SuperchargedXPMultiplier = 4;
     public static boolean SuperchargeActive = false;
     public static int MaxXPperLevel = 1000;
-    //
+    // API CONFIGS
+    public static boolean NotifyUsersofError = true; // This will auto inform users that have support for this if something happens. Usually on Database Rejection
     // Variables
     public static String sqlHost = "173.44.44.253";
     public static String sqlPort = "3306";

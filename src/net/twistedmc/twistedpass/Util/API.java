@@ -1,7 +1,7 @@
 package net.twistedmc.twistedpass.Util;
 
 import net.twistedmc.twistedpass.Main;
-import net.twistedmc.twistedpass.MySQL;
+//import net.twistedmc.twistedpass.MySQL;
 import net.twistedmc.twistedpass.Util.color.c;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
+import static net.twistedmc.twistedpass.Main.MySQL;
 import static net.twistedmc.twistedpass.Main.season;
 
 public class API {
@@ -31,6 +32,30 @@ public class API {
         return null;
     }
 
+    /***
+     *
+     * @param p - Player to fetch
+     * @return <code>int[]</code> with slot 0 being the user's level, and slot 1 being their XP. <code>null</code> if the record doesn't exist
+     */
+    public static int[] fetchLevelandXP(Player p) {
+        int[] LevelArray = new int[2];
+        try {
+            Statement stm = MySQL.openConnection().createStatement();
+            ResultSet set = stm.executeQuery("SELECT * FROM `" + season + "` WHERE `UUID`='" + p.getUniqueId() + "'");
+            while(set.next()){
+                int level = set.getInt("Level");
+                int XP = set.getInt("XP");
+                LevelArray[0] = level;
+                LevelArray[1] = XP;
+                return LevelArray;
+            }
+            MySQL.closeConnection();
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static String[] getLevelsArray(Player p) {
         String userLevels = fetchClaimedLevels(p);
         if (userLevels != null) {
@@ -39,6 +64,33 @@ public class API {
             System.out.println("Error fetching levels for user: " + p.getName() + " | UUID: " + p.getUniqueId() + " | ERROR CODE: 404-A");
         }
       return null;
+    }
+
+    /***
+     *
+     * @param XP The XP you are adding, Supercharged XP Calculations are done here.
+     * @param LevelsArray The array from API.fetchLevelandXP.
+     * @param supercharged Used from API.addXPToPlayer, whether XP Supercharge is active or not.
+     * @return an Int array with the first slot (0) being LEVELS added, and the 2nd slot (1) being returned XP.
+     */
+    public static int[] Calculations(int XP, int[] LevelsArray, boolean supercharged) {
+        int multiplier = 1;
+        int[] retuner = new int[2];
+        int MaxXP = Main.MaximumXPperLevel;
+        if (supercharged) { multiplier = Main.SuperchargedXPMultiplier; }
+        int newXP = (XP * multiplier) + LevelsArray[1];
+        int div = (newXP / MaxXP);
+        if (div >= 1) {
+            div = (int) Math.floor(div);
+            retuner[0] = div;
+            int minus =  (div * MaxXP);
+            retuner[1] = (newXP - minus);
+            return retuner;
+        } else {
+            retuner[0] = 0;
+            retuner[1] = newXP;
+            return retuner;
+        }
     }
     // PUBLIC API METHODS \\
     public static boolean UserHasClaimedLevel(Player p,int level) {
@@ -64,8 +116,26 @@ public class API {
 
     /***
      *
+     * @param p The player you're giving XP to.
+     * @param xp The amount of XP you're giving.
+     * @param reason The reason of you giving XP (Optional)
+     * @return boolean, True on success, False on mysql error
+     */
+    public static boolean addXPtoPlayer(Player p,int xp,String reason,String[] colors) {
+        int[] levels = fetchLevelandXP(p);
+        boolean Supercharged = Main.SuperchargeActive;
+        int[] newLevels = Calculations(xp,levels,Supercharged);
+        if (reason != null || reason != "") {
+
+        }
+        int[]
+    }
+    /***
+     *
      * @param p Player to create a profile for.
-     * @return True if the profile was created, false if an error occurs.
+     * @return Boolean (True if the profile was created, false if an error occurs.)
+     * @throws SQLException
+     * @throws ClassNotFoundException
      */
     public static boolean CreateUserProfile(Player p) {
         try {

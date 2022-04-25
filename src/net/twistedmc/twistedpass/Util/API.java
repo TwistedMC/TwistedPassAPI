@@ -3,6 +3,8 @@ package net.twistedmc.twistedpass.Util;
 import net.twistedmc.twistedpass.Main;
 //import net.twistedmc.twistedpass.MySQL;
 import net.twistedmc.twistedpass.Util.color.c;
+import net.twistedmc.twistedpass.events.LevelUpEvent;
+import net.twistedmc.twistedpass.events.XPAddedEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
@@ -118,17 +120,30 @@ public class API {
      *
      * @param p The player you're giving XP to.
      * @param xp The amount of XP you're giving.
-     * @param reason The reason of you giving XP (Optional)
+     * @deprecated  @param reason The reason of you giving XP (Optional) | Removed due to the new event calls, Listen for them to get the player object.
      * @return boolean, True on success, False on mysql error
      */
-    public static boolean addXPtoPlayer(Player p,int xp,String reason,String[] colors) {
+    public static boolean addXPtoPlayer(Player p,int xp) {
         int[] levels = fetchLevelandXP(p);
         boolean Supercharged = Main.SuperchargeActive;
+        XPAddedEvent xpAddedEvent = new XPAddedEvent(p,xp,Supercharged);
+        Bukkit.getPluginManager().callEvent(xpAddedEvent);
         int[] newLevels = Calculations(xp,levels,Supercharged);
-        if (reason != null || reason != "") {
-
+        if (newLevels[0] >= 1) {
+            //Easier to call an event here if any listeners are present rather
+            //then making a whole function or extra mess to this function to *possibly* tell a player
+            //They've leveled up. That way it can be handled separately,and the event  can be modified if it needs to.
+            LevelUpEvent levelUpEvent = new LevelUpEvent(p,newLevels[0]);
+            Bukkit.getPluginManager().callEvent(levelUpEvent);
         }
-        int[]
+        try {
+            Statement stm = MySQL.openConnection().createStatement();
+            int set = stm.executeUpdate("UPDATE `"+ season + "` SET `Level`="+newLevels[0]+",`XP`="+newLevels[1]+" WHERE `UUID`='" + p.getUniqueId() +"'");
+            return true;
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     /***
      *

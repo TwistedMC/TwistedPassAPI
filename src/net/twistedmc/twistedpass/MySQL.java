@@ -1,5 +1,4 @@
 package net.twistedmc.twistedpass;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -26,7 +25,7 @@ public class MySQL extends Database {
     }
 
     @Override
-    public static Connection openConnection() throws SQLException,
+    public Connection openConnection() throws SQLException,
             ClassNotFoundException {
         if (checkConnection()) {
             return connection;

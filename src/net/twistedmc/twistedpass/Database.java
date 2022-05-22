@@ -1,5 +1,4 @@
 package net.twistedmc.twistedpass;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +24,7 @@ public abstract class Database {
         return connection;
     }
 
-    public static boolean closeConnection() throws SQLException {
+    public boolean closeConnection() throws SQLException {
         if (connection == null) {
             return false;
         }

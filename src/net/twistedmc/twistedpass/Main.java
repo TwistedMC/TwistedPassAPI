@@ -19,6 +19,6 @@ public class Main extends JavaPlugin {
     public static String sqlPw = "3jpE8i8Yw(GXUe)4";
     public static Gson GSON = new Gson();
     public static MySQL MySQL = new MySQL(sqlHost, sqlPort, sqlDb, sqlUser, sqlPw);
-    public static java.sql.Connection con = null;
+    //public static java.sql.Connection con = null;
     //
 }

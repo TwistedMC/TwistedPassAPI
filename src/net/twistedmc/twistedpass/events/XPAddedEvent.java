@@ -29,6 +29,9 @@ public class XPAddedEvent extends Event implements Cancellable {
     public int getXP() {
         return this.xp;
     }
+    public boolean isSuperCharged() {
+        return this.isSuperCharged;
+    }
 
 
     @Override

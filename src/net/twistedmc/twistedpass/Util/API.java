@@ -120,7 +120,6 @@ public class API {
      *
      * @param p The player you're giving XP to.
      * @param xp The amount of XP you're giving.
-     * @deprecated  @param reason The reason of you giving XP (Optional) | Removed due to the new event calls, Listen for them to get the player object.
      * @return boolean, True on success, False on mysql error
      */
     public static boolean addXPtoPlayer(Player p,int xp) {

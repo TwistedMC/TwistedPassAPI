@@ -20,5 +20,5 @@ public class Main extends JavaPlugin {
     public static Gson GSON = new Gson();
     public static MySQL MySQL = new MySQL(sqlHost, sqlPort, sqlDb, sqlUser, sqlPw);
     //public static java.sql.Connection con = null;
-    //
+    
 }

@@ -1,4 +1,4 @@
-package net.twistedmc.twistedpass.Gui;
+package net.twistedmc.twistedpass.gui;
 
 public enum StaticPassItems {
 

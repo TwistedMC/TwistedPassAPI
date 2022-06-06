@@ -1,8 +1,8 @@
-package net.twistedmc.twistedpass.Util;
+package net.twistedmc.twistedpass.util;
 
 import net.twistedmc.twistedpass.Main;
 //import net.twistedmc.twistedpass.MySQL;
-import net.twistedmc.twistedpass.Util.color.c;
+import net.twistedmc.twistedpass.util.color.c;
 import net.twistedmc.twistedpass.events.LevelUpEvent;
 import net.twistedmc.twistedpass.events.XPAddedEvent;
 import org.bukkit.Bukkit;

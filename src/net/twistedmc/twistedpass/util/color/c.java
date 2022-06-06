@@ -1,4 +1,4 @@
-package net.twistedmc.twistedpass.Util.color;
+package net.twistedmc.twistedpass.util.color;
 
 import org.bukkit.ChatColor;
 

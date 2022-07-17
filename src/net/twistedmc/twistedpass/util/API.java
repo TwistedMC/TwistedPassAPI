@@ -15,12 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
-import static net.twistedmc.twistedpass.Main.MySQL;
-import static net.twistedmc.twistedpass.Main.season;
+import static net.twistedmc.twistedpass.Main.*;
 
 public class API {
     // PRIVATE API METHODS \\
-    public static String fetchClaimedLevels(Player p) {
+    private static String fetchClaimedLevels(Player p) {
         try {
             Statement stm = MySQL.openConnection().createStatement();
             ResultSet set = stm.executeQuery("SELECT * FROM `" + season + "` WHERE `UUID`='" + p.getUniqueId() + "'");
@@ -39,7 +38,7 @@ public class API {
      * @param p - Player to fetch
      * @return <code>int[]</code> with slot 0 being the user's level, and slot 1 being their XP. <code>null</code> if the record doesn't exist
      */
-    public static int[] fetchLevelandXP(Player p) {
+    private static int[] fetchLevelandXP(Player p) {
         int[] LevelArray = new int[2];
         try {
             Statement stm = MySQL.openConnection().createStatement();
@@ -58,16 +57,49 @@ public class API {
         return null;
     }
 
-    public static String[] getLevelsArray(Player p) {
+    private static String[][] getLevelsArray(Player p) {
         String userLevels = fetchClaimedLevels(p);
         if (userLevels != null) {
-           return Main.GSON.fromJson(userLevels,String[].class);
+           return Main.GSON.fromJson(userLevels,String[][].class);
         } else {
             System.out.println("Error fetching levels for user: " + p.getName() + " | UUID: " + p.getUniqueId() + " | ERROR CODE: 404-A");
         }
       return null;
     }
 
+    private static void updateClaimedLevels(Player p,String[][] claimedLevels) {
+        Statement stm = null;
+        try {
+            stm = MySQL.openConnection().createStatement();
+            int set = stm.executeUpdate("UPDATE `"+ season + "` SET `ClaimedLevels`="+ claimedLevels + " WHERE `UUID`='" + p.getUniqueId() +"'");
+        } catch (SQLException | ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (!(stm == null)) {
+                    stm.close();
+                    MySQL.closeConnection();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /***
+     * This function clones a claimed levels array and adds the new value into it.
+     * @param array array to clone/add value into
+     * @param input value to add to array
+     * @return String[] array
+     */
+    private static String[] addClaimedLevel(String[] array,String input) {
+        String[] clone = new String[array.length + 1];
+        for (int i=0;i< array.length; i++) {
+            clone[i] = array[i];
+        }
+        clone[clone.length - 1] = input;
+        return clone;
+    }
     /***
      *
      * @param XP The XP you are adding, Supercharged XP Calculations are done here.
@@ -95,11 +127,41 @@ public class API {
         }
     }
     // PUBLIC API METHODS \\
-    public static boolean UserHasClaimedLevel(Player p,int level) {
-        String[] levels = getLevelsArray(p);
+    public static boolean UserHasClaimedLevel(Player p,int level,String track) {
+        String[][] levels = getLevelsArray(p);
+        int trackint = 0;
+        if (track.equalsIgnoreCase("premium")) { trackint = 1;}
         if (levels == null) {  Bukkit.getLogger().log(Level.SEVERE,"[TwistedPassAPI] GetLevelsArray returned null; This cannot be null;"); }
-        List<String> userLevels = Arrays.asList(levels); // Not as small, but still nicely clean and pretty well put together. -N
+        List<String> userLevels = Arrays.asList(levels[trackint]); // Not as small, but still nicely clean and pretty well put together. -N
         if (userLevels.contains("" + level)) { return true; }
+        return false;
+    }
+    public static boolean claimLevel(Player p,int level,String track) {
+        try {
+            String[][] userLevels = getLevelsArray(p);
+            if (track.equalsIgnoreCase("free")) {
+                String[] track_ = userLevels[0];
+                if (!Arrays.asList(track_).contains("" + level)) {
+                    String[] clone = addClaimedLevel(track_,"" + level);
+                    String[][] newArray = {clone,userLevels[1]};
+                    updateClaimedLevels(p,newArray);
+                    return true;
+                }
+            }
+            if (track.equalsIgnoreCase("premium")) {
+                String[] track_ = userLevels[1];
+                // Duplicate protection
+                if (!Arrays.asList(track_).contains("" + level)) {
+                    String[] clone = addClaimedLevel(track_,"" + level);
+                    String[][] newArray = {userLevels[0],clone};
+                    updateClaimedLevels(p,newArray);
+                    return true;
+                }
+            }
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return false;
+        }
         return false;
     }
     public static boolean UserHasProfile(Player p) {
@@ -154,7 +216,7 @@ public class API {
     public static boolean CreateUserProfile(Player p) {
         try {
             Statement stm = MySQL.openConnection().createStatement();
-            int set = stm.executeUpdate("INSERT INTO `"+ season + "`(`id`, `UUID`, `Level`, `XP`, `ClaimedLevels`) VALUES (0,"+ p.getUniqueId() +",0,0,\"[]\")");
+            int set = stm.executeUpdate("INSERT INTO `"+ season + "`(`id`, `UUID`, `Level`, `XP`, `ClaimedLevels`) VALUES (0,"+ p.getUniqueId() +",0,0,\"[[],[]]\")");
             return true;
         } catch (SQLException | ClassNotFoundException e) {
             e.printStackTrace();
